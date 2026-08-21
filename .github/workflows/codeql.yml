@@ -22,6 +22,12 @@ permissions:
 
 jobs:
   analyze:
+    # Code scanning uploads require Code Security (GHAS) enabled on private
+    # repositories — this repo has it off, and turning it on is a paid org
+    # decision. This job therefore skips (neutral on PRs) until a repository
+    # variable CODEQL_ENABLED=true is set:
+    #   Settings > Secrets and variables > Actions > Variables > CODEQL_ENABLED=true
+    if: vars.CODEQL_ENABLED == 'true'
     name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
     permissions:

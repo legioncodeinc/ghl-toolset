@@ -109,7 +109,7 @@ The convention is documented in CONTRIBUTING.md and the PR template; commits fro
 | Secret scanning | ❌ disabled |
 | Push protection | ❌ disabled |
 | Dependabot alerts | ❌ disabled (version-updates file is on branch; the alerts toggle is separate) |
-| Code security (CodeQL default setup) | ❌ disabled — the committed `codeql.yml` covers scanning, so this is acceptable; do not enable both |
+| Code security (CodeQL default setup) | ❌ disabled — **blocks all code-scanning uploads on this private repo**; the committed `codeql.yml` is gated behind a `CODEQL_ENABLED` repo variable and skips until Code Security is enabled (paid GHAS decision for the org) |
 
 ---
 
@@ -136,7 +136,7 @@ The convention is documented in CONTRIBUTING.md and the PR template; commits fro
 
 | Priority | Finding | Impact | Effort | Action |
 |---|---|---|---|---|
-| 1 (4.0) | Secret scanning, push protection, Dependabot alerts all disabled | 4 | 1 | Settings → Advanced Security → enable all three (repo is private; owner access) |
+| 1 (4.0) | Secret scanning, push protection, Dependabot alerts, Code Security all disabled | 4 | 1 | Settings → Advanced Security. Note: on a **private** repo these are GHAS features with per-committer billing — an org cost decision. If enabled, also set repo variable `CODEQL_ENABLED=true` to activate the gated CodeQL workflow |
 | 2 (4.0) | CI status checks not required before merge | 4 | 1 | After this PR merges and CI runs once: ruleset 21131540 → Add rule → Require status checks → `Validate extension manifests` |
 | 3 (4.0) | CODEOWNERS org-handle binding unverified; possible merge deadlock | 4 | 1 | Watch first PR; if blocked, adjust ruleset bypass or point `*` at a team/personal handle |
 | 4 (3.0) | All three merge methods allowed | 3 | 1 | Settings → General → Pull Requests → allow squash merge only |
