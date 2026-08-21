@@ -75,6 +75,10 @@ Desktop.ini
 # Exported backups produced by the tools themselves.
 *.zip
 
+# Generated image artifacts (imagegen outputs). Generated assets are local
+# working files; they never belong in the repo.
+output/
+
 # Chrome packaging artifacts. A .pem here would be the Web Store upload key:
 # a real secret that must never be committed.
 *.crx
