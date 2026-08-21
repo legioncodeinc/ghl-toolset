@@ -51,7 +51,7 @@ Use the [issue templates](./.github/ISSUE_TEMPLATE/). Do not report security vul
 
 ## Release process
 
-Releases are cut manually by a maintainer: bump the affected tool's `version` in its `manifest.json`, update [CHANGELOG.md](./CHANGELOG.md) (rename `Unreleased` to a dated version), commit, and tag `v<x.y.z>`. There is no publishing pipeline — consumers pin to tags of this repo.
+Releases are cut by a maintainer: bump the affected tool's `version` in its `manifest.json`, update [CHANGELOG.md](./CHANGELOG.md), commit, and push a `v<x.y.z>` tag. The tag triggers the [Release workflow](./.github/workflows/release.yml), which validates manifests, packages each tool folder as a ZIP with checksums, and publishes the GitHub Release using that version's CHANGELOG section as the release notes. Consumers download a release ZIP and load the tool folder unpacked — there is no Chrome Web Store distribution and no auto-update.
 
 ## Questions
 

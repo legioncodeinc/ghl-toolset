@@ -131,7 +131,7 @@ Passing looks like one `ok` line per tool manifest and exit code 0. This is the 
 
 ## Deployment
 
-There is no pipeline to ship: tools are loaded unpacked straight from a checkout of this repo. Distributing via the Chrome Web Store is a future decision; until then, pin consumers to a tag of this repo. Exported data never transits any server — it goes from the browser tab to the ZIP on disk.
+Releases are published by pushing a `v<x.y.z>` tag: the [Release workflow](./.github/workflows/release.yml) validates every manifest, packages each tool folder as a ZIP (with a `checksums.txt`), and publishes a GitHub Release using that version's CHANGELOG section as the notes. To install from a release: download the tool's ZIP, unzip it, and load the resulting folder via `chrome://extensions` → **Load unpacked**. Extensions loaded unpacked never auto-update — a new release means downloading the new ZIP and replacing the folder. Chrome Web Store distribution is out of scope for this project. Exported data never transits any server — it goes from the browser tab to the ZIP on disk.
 
 ## Contributing
 
