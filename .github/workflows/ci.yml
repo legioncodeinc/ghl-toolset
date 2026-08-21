@@ -1,0 +1,44 @@
+name: CI
+
+# Validates every tool's Chrome extension manifest on push and pull request
+# against main. This repo is dependency-free vanilla JavaScript, so there is
+# no install step, no lockfile, and nothing to cache; lint/typecheck/test jobs
+# arrive when a tool introduces a build system.
+# Grounded in least-privilege GITHUB_TOKEN guidance:
+# raw/get-started--ci-security--actions-secure-use-official-docs.md
+# raw/get-started--ci-security--secure-pipelines-cheat-sheet.md
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Default every job to read-only. Jobs that need more must grant it themselves.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate extension manifests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Pin third-party actions to a full commit SHA, not a tag, and keep the
+      # version comment for readability. Resolve the SHA for your installed
+      # major version with: gh api repos/actions/checkout/git/ref/tags/vX.Y.Z --jq '.object.sha'
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Validate manifests
+        run: node scripts/validate-manifests.mjs
