@@ -28,7 +28,7 @@ assignees: ""
 
 ## Environment
 
-- Tool and version: {e.g. ghl-workflow-exporter 1.0.0 — see its manifest.json}
+- Tool and version: {e.g. ghl-workflow-tools 1.1.0 — see its manifest.json}
 - Browser: {browser_and_version}
 - HighLevel app domain: {app.gohighlevel.com or your white-labelled domain — never paste tokens}
 

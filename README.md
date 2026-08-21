@@ -1,9 +1,11 @@
 # GHL Toolset
 
+**By [Legion Code Inc.](https://github.com/legioncodeinc)**
+
 [![CI](https://img.shields.io/github/actions/workflow/status/legioncodeinc/ghl-toolset/ci.yml?branch=main&label=CI)](https://github.com/legioncodeinc/ghl-toolset/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/legioncodeinc/ghl-toolset)](https://github.com/legioncodeinc/ghl-toolset/blob/main/LICENSE)
 
-A growing set of small Chrome extensions that export, back up, and version-control every facet of a GoHighLevel (HighLevel) sub-account — one focused tool per facet, for agencies and operators who keep their sub-account configuration in git.
+A growing set of small Chrome extensions that export, back up, restore, and version-control every facet of a GoHighLevel (HighLevel) sub-account — one focused tool per facet, for agencies and operators who keep their sub-account configuration in git.
 
 > **R&D purposes only.** This toolset is built and published for research and development purposes only. The tools talk to undocumented, internal HighLevel endpoints that can change or break without notice, and this project is not affiliated with or endorsed by HighLevel. Verify everything a tool produces before relying on it anywhere real.
 
@@ -15,10 +17,10 @@ This is a deliberate design choice: rather than one bulk extension that migrates
 
 The first tool is live:
 
-| Tool | Status | What it does |
-| --- | --- | --- |
-| [`ghl-workflow-exporter`](./ghl-workflow-exporter/) | Available | Exports every workflow in the current sub-account as re-importable JSON in a ZIP |
-| `ghl-*` — pipelines, calendars, custom values, templates, funnels, forms, and the rest of the account | Planned | One focused tool per facet; see [Roadmap](#roadmap) |
+| Tool | Extension | Status | What it does |
+| --- | --- | --- | --- |
+| [`ghl-workflow-tools`](./ghl-workflow-tools/) | GHL Workflow Backup | Available | Exports every workflow in the current sub-account as re-importable JSON in a ZIP, and restores workflows from a backup — as new drafts or in-place overwrites |
+| `ghl-*` — pipelines, calendars, custom values, templates, funnels, forms, and the rest of the account | — | Planned | One focused tool per facet; see [Roadmap](#roadmap) |
 
 ## Why it exists
 
@@ -29,7 +31,7 @@ Bulk export tools that exist are all-or-nothing: they assume you want everything
 Every tool in the set follows the same contract, so behavior learned on one transfers to all of them:
 
 - **No credential handling.** Tools borrow the page's own authenticated HTTP client (`window.SHELL_STORE.$http`) inside the tab you are signed into. No token is read, stored, or transmitted by the extension.
-- **Read-only.** Every request a tool makes is a GET. Nothing in the sub-account is modified.
+- **Exports are read-only.** Every request an export makes is a GET. Writes exist in exactly one place today — the workflow tool's Import tab — where they are always explicit, user-initiated actions: restores land as new **drafts** by default, overwriting a published workflow requires an extra acknowledgement, and nothing is ever published for you.
 - **Minimal permissions.** `activeTab`, `scripting`, `downloads`. No host permissions, no background service worker, no remote code.
 - **Works on any GHL host.** White-labelled domains included — tools never hardcode `app.gohighlevel.com`.
 - **Deterministic output.** Sorted keys, fixed timestamps, and volatile fields (signed URLs, per-user permission metadata) stripped, so an unchanged sub-account re-exports byte-identically and `git status` stays quiet.
@@ -40,7 +42,7 @@ About a minute, no build step:
 
 1. Open `chrome://extensions`.
 2. Turn on **Developer mode** (top right).
-3. **Load unpacked** → select the `ghl-workflow-exporter` folder from your clone of this repo.
+3. **Load unpacked** → select the `ghl-workflow-tools` folder from your clone of this repo.
 4. Open a HighLevel sub-account tab, click the extension icon, hit **Export workflows**.
 
 ## Install
@@ -56,13 +58,13 @@ Then load the folder of the tool you want via `chrome://extensions` → **Load u
 
 ## Usage
 
-Each tool has its own README with its exact flow — start with [`ghl-workflow-exporter/README.md`](./ghl-workflow-exporter/README.md). The shared pattern across all of them:
+Each tool has its own README with its exact flow — start with [`ghl-workflow-tools/README.md`](./ghl-workflow-tools/README.md). The shared pattern across all of them:
 
 1. Open the sub-account tab you care about (the tool shows which sub-account it detected).
 2. Click the tool's icon and run its action.
-3. A ZIP lands in your downloads, shaped for unzipping straight into a git repo.
+3. An export lands as a ZIP in your downloads, shaped for unzipping straight into a git repo; a restore takes a previous export (`.zip` or loose `.json`) and writes it back — as drafts unless you explicitly overwrite.
 
-The typical workflow-export session produces:
+A workflow backup session produces:
 
 ```text
 legendary-academy-<locationId>/
@@ -104,9 +106,10 @@ flowchart LR
     A -->|deterministic ZIP<br/>zip.js| E[Download]
 ```
 
-- `popup.js` — orchestration: probes the tab, drives the export loop, builds files.
+- `popup.js` — orchestration: probes the tab, drives the export and import loops, builds files.
 - `agent.js` — functions injected into the page's MAIN world. They must be fully self-contained (no imports, no closures) because they are serialized and re-parsed in the page.
 - `zip.js` — dependency-free ZIP writer with a fixed timestamp, so identical content produces an identical archive.
+- `unzip.js` — dependency-free ZIP reader (the browser's own `DecompressionStream`), so backups can be read back without third-party code.
 
 ## Development
 
@@ -137,3 +140,5 @@ PRs welcome, especially for the roadmap facets above — one tool per PR, follow
 ## License
 
 GHL Toolset is licensed under the [GNU Affero General Public License v3.0](./LICENSE). Each tool in the set carries the same license.
+
+Copyright (c) 2026 [Legion Code Inc.](https://github.com/legioncodeinc)
