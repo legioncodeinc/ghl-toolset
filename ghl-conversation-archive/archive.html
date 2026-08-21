@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Conversation archive</title>
+<link rel="stylesheet" href="archive.css">
+</head>
+<body>
+<main>
+  <h1>Conversation archive</h1>
+  <p id="sub" class="muted">Connecting to the HighLevel tab&hellip;</p>
+
+  <ol class="steps">
+    <li id="s1" class="step">
+      <h2>1 · Grant access to this sub-account</h2>
+      <p class="muted">The archive runs for a long time, so it needs durable permission for this one
+        origin rather than the per-click access the popup uses. You can revoke it at any time from
+        the extension's details page.</p>
+      <button id="grant" class="primary">Grant access</button>
+      <p id="grantState" class="state"></p>
+    </li>
+
+    <li id="s2" class="step is-off">
+      <h2>2 · Choose where to write it</h2>
+      <p class="muted">Pick an empty folder on this machine. Files are written as the run goes, so
+        nothing large is held in memory and a crash costs you only the conversation in flight.</p>
+      <button id="pick" class="primary">Choose folder&hellip;</button>
+      <p id="pickState" class="state"></p>
+      <fieldset class="opts">
+        <legend class="muted">What to write</legend>
+        <label class="check">
+          <input id="optFiles" type="checkbox" checked>
+          <span>One file per conversation
+            <em class="muted">Readable threads you can open individually. Best for the archive and
+            dispute-answering case.</em></span>
+        </label>
+        <label class="check">
+          <input id="optJsonl" type="checkbox" checked>
+          <span><code>messages.jsonl</code>
+            <em class="muted">One message per line. This is the one to stream into SQLite or DuckDB
+            for search and analysis.</em></span>
+        </label>
+        <label class="check">
+          <input id="optPretty" type="checkbox">
+          <span>Pretty-print the per-conversation files
+            <em class="muted">Easier to read by eye, roughly a quarter larger.</em></span>
+        </label>
+      </fieldset>
+
+      <label class="check">
+        <input id="withContacts" type="checkbox" checked>
+        <span>Also fetch each contact record.
+          <em class="muted">Adds phone numbers, which the conversation list does not return. Needed if
+          you ever want to map these contacts into another account. Costs roughly one extra request
+          per contact.</em></span>
+      </label>
+    </li>
+
+    <li id="s3" class="step is-off">
+      <h2>3 · Run</h2>
+      <div class="controls">
+        <button id="start" class="primary">Start</button>
+        <button id="pause" hidden>Pause</button>
+        <button id="stop" hidden>Stop</button>
+      </div>
+
+      <div id="stats" class="stats stats-5" hidden>
+        <div><b id="nConv">0</b><span class="muted">conversations</span></div>
+        <div><b id="nMsg">0</b><span class="muted">messages</span></div>
+        <div><b id="nMb">0</b><span class="muted">MB written</span></div>
+        <div><b id="eta">—</b><span class="muted">remaining</span></div>
+        <div><b id="proj">—</b><span class="muted">projected total</span></div>
+      </div>
+      <div class="bar" hidden id="barWrap"><span id="bar"></span></div>
+      <p id="now" class="muted"></p>
+      <p id="runState" class="state"></p>
+      <details id="errBox" hidden>
+        <summary><span id="errCount">0</span> conversation(s) failed</summary>
+        <ul id="errList"></ul>
+      </details>
+    </li>
+  </ol>
+
+  <section class="note">
+    <h2>What lands in the folder</h2>
+    <ul>
+      <li><code>conversations/&lt;contact&gt;-&lt;id&gt;.json</code> — one readable file per thread.</li>
+      <li><code>messages.jsonl</code> — one message per line. Stream this into SQLite or DuckDB.</li>
+      <li><code>conversations.jsonl</code> — one conversation per line, metadata only.</li>
+      <li><code>contacts.json</code> — contact id to name, email and phone. This is the mapping table
+        a future migration would join on.</li>
+      <li><code>manifest.json</code> — counts and the resume cursor. Keep it; it is what lets an
+        interrupted run pick up where it stopped.</li>
+    </ul>
+    <p class="muted">Measured on a 24-conversation sample of this sub-account: about 81 messages per
+      conversation at roughly 2.4&nbsp;KB each. Both outputs together land near 880&nbsp;MB for 2,058
+      conversations; either one alone is closer to 390&nbsp;MB. The projected figure above corrects
+      itself from real bytes as the run proceeds.</p>
+    <p class="muted">This is customer data: names, email addresses, phone numbers and full message
+      bodies. It is written unencrypted, as you asked. Keep it out of any git repository — not
+      because a private repo is insecure, but because git history is permanent and this is exactly
+      the data a deletion request applies to.</p>
+  </section>
+</main>
+<script type="module" src="archive.js"></script>
+</body>
+</html>
