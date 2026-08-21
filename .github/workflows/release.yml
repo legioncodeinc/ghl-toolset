@@ -1,0 +1,69 @@
+name: Release
+
+# Publishes a GitHub Release when a v* tag is pushed (the release process in
+# CONTRIBUTING.md): validates every manifest, packages each tool folder as a
+# ZIP shaped for chrome://extensions → Load unpacked (the archive contains the
+# tool folder itself), and attaches checksums. Uses the preinstalled gh CLI
+# instead of a third-party release action. There is no Chrome Web Store
+# distribution, and extensions loaded unpacked never auto-update.
+
+on:
+  push:
+    tags: ['v*']
+
+# Default every job to read-only. The release job grants itself write because
+# creating a GitHub Release requires it.
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Package and publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Pin third-party actions to a full commit SHA, not a tag, and keep the
+      # version comment for readability (same policy as ci.yml).
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Validate manifests
+        run: node scripts/validate-manifests.mjs
+
+      - name: Package tools
+        run: |
+          set -euo pipefail
+          mkdir -p dist-release
+          for tool in ghl-*/; do
+            tool="${tool%/}"
+            version=$(node -p "require('./${tool}/manifest.json').version")
+            zip -r -X "dist-release/${tool}-${version}.zip" "${tool}"
+          done
+          (cd dist-release && sha256sum *.zip > checksums.txt && cat checksums.txt)
+
+      - name: Extract release notes
+        run: |
+          set -euo pipefail
+          ver="${GITHUB_REF_NAME#v}"
+          awk -v sec="## [${ver}]" '
+            index($0, sec) == 1 { found = 1; next }
+            found && (/^## \[/ || /^\[/) { exit }
+            found { print }
+          ' CHANGELOG.md | sed '/^[[:space:]]*$/d' > release-notes.md
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ -s release-notes.md ]; then
+            gh release create "$GITHUB_REF_NAME" dist-release/* --title "$GITHUB_REF_NAME" -F release-notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" dist-release/* --title "$GITHUB_REF_NAME" --generate-notes
+          fi
