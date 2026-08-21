@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GHL Workflow Exporter</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>Workflow Exporter</h1>
+    <p id="target" class="muted">Checking this tab&hellip;</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button id="tab-export" class="tab is-active" role="tab" aria-selected="true">Export</button>
+    <button id="tab-import" class="tab" role="tab" aria-selected="false">Import</button>
+  </nav>
+
+  <section id="panel-export">
+    <button id="run" class="primary" disabled>Export workflows</button>
+    <div id="progress" hidden>
+      <div class="bar"><span id="fill"></span></div>
+      <p id="step" class="muted"></p>
+    </div>
+    <p id="status" role="status"></p>
+    <p class="muted foot">Reads only. Nothing in this sub-account is modified.</p>
+  </section>
+
+  <section id="panel-import" hidden>
+    <label class="filepick">
+      <input id="files" type="file" accept=".zip,.json" multiple hidden>
+      <span>Choose backup files&hellip;</span>
+      <em class="muted">a .zip export, or individual workflow .json files</em>
+    </label>
+
+    <div id="picked" hidden>
+      <div class="rowhead">
+        <label class="check"><input id="all" type="checkbox" checked> <span id="count"></span></label>
+      </div>
+      <div id="list"></div>
+
+      <div id="livewarn" class="warn" hidden>
+        <label class="check">
+          <input id="ack" type="checkbox">
+          <span>I understand <strong id="livecount"></strong> live workflow(s) will be replaced and will keep running with the imported content.</span>
+        </label>
+      </div>
+
+      <button id="import" class="primary danger">Import</button>
+      <div id="iprogress" hidden>
+        <div class="bar"><span id="ifill"></span></div>
+        <p id="istep" class="muted"></p>
+      </div>
+      <p id="istatus" role="status"></p>
+    </div>
+
+    <p class="muted foot">Imports arrive as drafts unless you overwrite a published workflow. Nothing is published for you.</p>
+  </section>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
