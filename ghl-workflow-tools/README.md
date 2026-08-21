@@ -133,3 +133,7 @@ Re-exporting an unchanged workflow produces a byte-identical file, so
 
 ### 1.0.0
 - Export every workflow in the current sub-account as a ZIP.
+
+---
+
+By [Legion Code Inc.](https://github.com/legioncodeinc) · part of the [GHL Toolset](https://github.com/legioncodeinc/ghl-toolset) · AGPL-3.0
