@@ -28,7 +28,8 @@ jobs:
     # variable CODEQL_ENABLED=true is set:
     #   Settings > Secrets and variables > Actions > Variables > CODEQL_ENABLED=true
     if: vars.CODEQL_ENABLED == 'true'
-    name: Analyze (${{ matrix.language }})
+    # Static name: a skipped job renders a matrix-templated name literally.
+    name: Analyze (CodeQL)
     runs-on: ubuntu-latest
     permissions:
       contents: read
